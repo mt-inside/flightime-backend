@@ -40,11 +40,11 @@ fn main() {
     const FMT_NOTZ: &str = "%a %e %T";
     const FMT_TZ: &str = "%a %e %T %Z";
     println!(
-        "{} | {} | {} | {} | {}",
+        "{} | {:.1} | {} | {:.1} | {}",
         start.format(FMT_TZ),
-        now.signed_duration_since(start).num_hours(),
-        t.format(FMT_NOTZ),
-        end.signed_duration_since(now).num_hours(),
+        t.elapsed_s as f32 / 60.0 / 60.0,
+        t.walltime.format(FMT_NOTZ),
+        t.remaining_s as f32 / 60.0 / 60.0,
         end.format(FMT_TZ)
     );
 

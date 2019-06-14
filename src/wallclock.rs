@@ -7,6 +7,12 @@ pub struct Wallclock {
     end: DateTime<FixedOffset>,
 }
 
+pub struct Walltime {
+    pub elapsed_s: i64,
+    pub walltime: DateTime<FixedOffset>,
+    pub remaining_s: i64,
+}
+
 impl Wallclock {
     pub fn new(
         logger: slog::Logger,
@@ -19,7 +25,7 @@ impl Wallclock {
     pub fn go(
         &self,
         now: DateTime<FixedOffset>, // TODO take UTC
-    ) -> chrono::DateTime<FixedOffset> {
+    ) -> Walltime {
         /*
         LHR -> JFK. 8hr flight. -5 tz. leave 10am GMT, arrive 1pm EST. Half-way point = 2pm GMT
         e = 8 - 5 = 3
@@ -36,11 +42,22 @@ impl Wallclock {
         t = a + (n - a) * r
         */
 
+        let elapsed_s = now.signed_duration_since(self.start).num_seconds();
+        let remaining_s = self.end.signed_duration_since(now).num_seconds();
+
         if now < self.start {
-            return now;
+            return Walltime {
+                elapsed_s,
+                walltime: now,
+                remaining_s,
+            };
         }
         if now > self.end {
-            return now;
+            return Walltime {
+                elapsed_s,
+                walltime: now,
+                remaining_s,
+            };
         }
 
         let duration = self.end.signed_duration_since(self.start);
@@ -52,9 +69,13 @@ impl Wallclock {
             .checked_add(&Duration::seconds(tzdiff.into()))
             .unwrap();
         let wallclock_rate = wallclock_elapsed.num_hours() as f64 / duration.num_hours() as f64;
-        let wallclock =
+        let walltime =
             self.start + scale_duration(now.signed_duration_since(self.start), wallclock_rate);
-        wallclock
+        Walltime {
+            elapsed_s,
+            walltime,
+            remaining_s,
+        }
     }
 }
 
