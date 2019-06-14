@@ -1,0 +1,12 @@
+[package]
+name = "flightime-backend"
+version = "0.1.0"
+authors = ["Matt Turner <matturner@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+gotham = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+slog = { version = "2.4", features = ["max_level_trace", "release_max_level_warn"] }
+slog-term = "2.4"
+slog-async = "2.3"
