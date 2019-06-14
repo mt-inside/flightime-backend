@@ -36,6 +36,13 @@ impl Wallclock {
         t = a + (n - a) * r
         */
 
+        if now < self.start {
+            return now;
+        }
+        if now > self.end {
+            return now;
+        }
+
         let duration = self.end.signed_duration_since(self.start);
         trace!(self.logger, "duration: {}", duration.num_hours());
         let tzdiff = self.end.timezone().fix().local_minus_utc()
