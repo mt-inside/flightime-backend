@@ -7,6 +7,7 @@ pub struct Wallclock {
     end: DateTime<FixedOffset>,
 }
 
+#[derive(Serialize)]
 pub struct Walltime {
     pub elapsed_s: i64,
     pub walltime: DateTime<FixedOffset>,
@@ -24,7 +25,7 @@ impl Wallclock {
 
     pub fn go(
         &self,
-        now: DateTime<FixedOffset>, // TODO take UTC
+        utc_now: DateTime<Utc>,
     ) -> Walltime {
         /*
         LHR -> JFK. 8hr flight. -5 tz. leave 10am GMT, arrive 1pm EST. Half-way point = 2pm GMT
@@ -41,6 +42,8 @@ impl Wallclock {
         r = e / d # time runs at this rate
         t = a + (n - a) * r
         */
+
+        let now = utc_now.with_timezone(&self.start.timezone());
 
         let elapsed_s = now.signed_duration_since(self.start).num_seconds();
         let remaining_s = self.end.signed_duration_since(now).num_seconds();
