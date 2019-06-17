@@ -23,10 +23,7 @@ impl Wallclock {
         Wallclock { logger, start, end }
     }
 
-    pub fn go(
-        &self,
-        utc_now: DateTime<Utc>,
-    ) -> Walltime {
+    pub fn go(&self, utc_now: DateTime<Utc>) -> Walltime {
         /*
         LHR -> JFK. 8hr flight. -5 tz. leave 10am GMT, arrive 1pm EST. Half-way point = 2pm GMT
         e = 8 - 5 = 3
@@ -108,10 +105,10 @@ mod tests {
         let now = FixedOffset::east(0 * HOUR)
             .ymd(2019, 6, 14)
             .and_hms(14, 0, 0);
-        let t = wc.go(now);
+        let t = wc.go(now.with_timezone(&Utc));
 
         assert_eq!(
-            t,
+            t.walltime,
             FixedOffset::east(0 * HOUR)
                 .ymd(2019, 6, 14)
                 .and_hms(11, 30, 0)
@@ -132,10 +129,10 @@ mod tests {
         let now = FixedOffset::east(0 * HOUR)
             .ymd(2019, 6, 15)
             .and_hms(3, 0, 0);
-        let t = wc.go(now);
+        let t = wc.go(now.with_timezone(&Utc));
 
         assert_eq!(
-            t,
+            t.walltime,
             FixedOffset::east(0 * HOUR)
                 .ymd(2019, 6, 15)
                 .and_hms(7, 0, 0)
@@ -156,10 +153,10 @@ mod tests {
         let now = FixedOffset::east(8 * HOUR)
             .ymd(2019, 6, 14)
             .and_hms(23, 0, 0);
-        let t = wc.go(now);
+        let t = wc.go(now.with_timezone(&Utc));
 
         assert_eq!(
-            t,
+            t.walltime,
             FixedOffset::east(8 * HOUR)
                 .ymd(2019, 6, 14)
                 .and_hms(16, 30, 0)
@@ -180,10 +177,10 @@ mod tests {
         let now = FixedOffset::east(-5 * HOUR)
             .ymd(2019, 6, 14)
             .and_hms(17, 0, 0);
-        let t = wc.go(now);
+        let t = wc.go(now.with_timezone(&Utc));
 
         assert_eq!(
-            t,
+            t.walltime,
             FixedOffset::east(-5 * HOUR)
                 .ymd(2019, 6, 14)
                 .and_hms(23, 30, 0)
