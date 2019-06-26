@@ -32,6 +32,12 @@ struct WallclockConfig {
     start: String,
     end: String,
 }
+#[derive(Serialize)]
+struct WallclockRender {
+    elapsed_s: i64,
+    walltime: DateTime<FixedOffset>,
+    remaining_s: i64,
+}
 
 fn make_router(state: ReqState) -> Router {
     let middleware = StateMiddleware::new(state);
@@ -82,12 +88,17 @@ pub fn get_handler(state: State) -> Box<HandlerFuture> {
         match wc {
             Some(wc) => {
                 let t = wc.go(Utc::now());
+                let r = WallclockRender {
+                    elapsed_s: t.elapsed.num_seconds(),
+                    walltime: t.walltime,
+                    remaining_s: t.remaining.num_seconds(),
+                };
 
                 create_response(
                     &state,
                     StatusCode::OK,
                     mime::APPLICATION_JSON,
-                    serde_json::to_string(&t).expect("Serialisation error"),
+                    serde_json::to_string(&r).expect("Serialisation error"),
                 )
             }
             None => create_response(

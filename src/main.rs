@@ -9,13 +9,13 @@ extern crate slog;
 extern crate slog_async;
 extern crate slog_term;
 
-
 mod api;
+pub mod chrono_utils;
 pub mod logging;
 mod wallclock;
+
 use chrono::prelude::*;
 use std::env;
-
 use wallclock::Wallclock;
 
 fn main() {
@@ -35,11 +35,11 @@ fn main() {
         const FMT_NOTZ: &str = "%a %e %T";
         const FMT_TZ: &str = "%a %e %T %Z";
         println!(
-            "{} | {:.1} | {} | {:.1} | {}",
+            "{} | {} | {} | {} | {}",
             start.format(FMT_TZ),
-            t.elapsed_s as f32 / 60.0 / 60.0,
+            chrono_utils::render_hours_mins(t.elapsed),
             t.walltime.format(FMT_NOTZ),
-            t.remaining_s as f32 / 60.0 / 60.0,
+            chrono_utils::render_hours_mins(t.remaining),
             end.format(FMT_TZ)
         );
     } else if args.len() == 1 {

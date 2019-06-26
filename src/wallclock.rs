@@ -1,17 +1,18 @@
 use chrono::prelude::*;
 use chrono::Duration;
 
+use crate::chrono_utils;
+
 pub struct Wallclock {
     logger: slog::Logger,
     start: DateTime<FixedOffset>,
     end: DateTime<FixedOffset>,
 }
 
-#[derive(Serialize)]
 pub struct Walltime {
-    pub elapsed_s: i64,
+    pub elapsed: Duration,
     pub walltime: DateTime<FixedOffset>,
-    pub remaining_s: i64,
+    pub remaining: Duration,
 }
 
 impl Wallclock {
@@ -42,39 +43,48 @@ impl Wallclock {
 
         let now = utc_now.with_timezone(&self.start.timezone());
 
-        let elapsed_s = now.signed_duration_since(self.start).num_seconds();
-        let remaining_s = self.end.signed_duration_since(now).num_seconds();
+        let elapsed = now.signed_duration_since(self.start);
+        let remaining = self.end.signed_duration_since(now);
 
         if now < self.start {
             return Walltime {
-                elapsed_s,
+                elapsed,
                 walltime: now,
-                remaining_s,
+                remaining,
             };
         }
         if now > self.end {
             return Walltime {
-                elapsed_s,
+                elapsed,
                 walltime: now,
-                remaining_s,
+                remaining,
             };
         }
 
         let duration = self.end.signed_duration_since(self.start);
-        trace!(self.logger, "duration: {}", duration.num_hours());
+        trace!(
+            self.logger,
+            "duration: {}",
+            chrono_utils::render_hours_mins(duration)
+        );
         let tzdiff = self.end.timezone().fix().local_minus_utc()
             - self.start.timezone().fix().local_minus_utc();
-        trace!(self.logger, "tzdiff: {}", tzdiff / 60 / 60);
+        trace!(self.logger, "tzdiff: {:.1}", tzdiff as f32 / 60.0 / 60.0);
         let wallclock_elapsed = duration
             .checked_add(&Duration::seconds(tzdiff.into()))
             .unwrap();
+        trace!(
+            self.logger,
+            "apparent length: {}",
+            chrono_utils::render_hours_mins(wallclock_elapsed)
+        );
         let wallclock_rate = wallclock_elapsed.num_hours() as f64 / duration.num_hours() as f64;
         let walltime =
             self.start + scale_duration(now.signed_duration_since(self.start), wallclock_rate);
         Walltime {
-            elapsed_s,
+            elapsed,
             walltime,
-            remaining_s,
+            remaining,
         }
     }
 }
