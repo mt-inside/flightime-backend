@@ -25,22 +25,6 @@ impl Wallclock {
     }
 
     pub fn go(&self, utc_now: DateTime<Utc>) -> Walltime {
-        /*
-        LHR -> JFK. 8hr flight. -5 tz. leave 10am GMT, arrive 1pm EST. Half-way point = 2pm GMT
-        e = 8 - 5 = 3
-        r = 3/8
-        t = 10 + 4 * 3/8 = 11.5 TICK
-
-        LHR -> SIN. 12h flight. +8 tz. Leave 9pm GMT, arrive 5pm SGT. Half-way point = 3am GMT
-        e = 12 + 8 = 20
-        r = 20/12
-        t = 9 + 6 * 20/12 = 7 TICK
-
-        e= d + tz # elapsed time in our wonky space; time to have added to the takeoff by the end
-        r = e / d # time runs at this rate
-        t = a + (n - a) * r
-        */
-
         let now = utc_now.with_timezone(&self.start.timezone());
 
         let elapsed = now.signed_duration_since(self.start);
@@ -101,8 +85,21 @@ mod tests {
 
     const HOUR: i32 = 60 * 60;
 
+    /*
+    "algorithm":
+    e= d + tz # elapsed time in our wonky space; time to have added to the takeoff by the end
+    r = e / d # time runs at this rate
+    t = a + (n - a) * r
+    */
+
     #[test]
     fn go_test_lhr_jfk() {
+        /*
+        LHR -> JFK. 8hr flight. -5 tz. leave 10am GMT, arrive 1pm EST. Half-way point = 2pm GMT
+        e = 8 - 5 = 3
+        r = 3/8
+        t = 10 + 4 * 3/8 = 11.5 TICK
+        */
         let logger = test_logger();
         let start = FixedOffset::east(0 * HOUR)
             .ymd(2019, 6, 14)
@@ -127,6 +124,12 @@ mod tests {
 
     #[test]
     fn go_test_lhr_sin() {
+        /*
+        LHR -> SIN. 12h flight. +8 tz. Leave 9pm GMT, arrive 5pm SGT. Half-way point = 3am GMT
+        e = 12 + 8 = 20
+        r = 20/12
+        t = 9 + 6 * 20/12 = 7 TICK
+        */
         let logger = test_logger();
         let start = FixedOffset::east(0 * HOUR)
             .ymd(2019, 6, 14)
