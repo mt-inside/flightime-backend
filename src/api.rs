@@ -39,6 +39,13 @@ struct WallclockRender {
     remaining_s: i64,
 }
 
+pub fn serve(logger: slog::Logger, addr: String) {
+    warn!(logger, "Listening for requests at http://{}", addr);
+    let r = make_router(ReqState::new(logger));
+
+    gotham::start(addr, r);
+}
+
 fn make_router(state: ReqState) -> Router {
     let middleware = StateMiddleware::new(state);
     let pipeline = single_middleware(middleware);
@@ -50,13 +57,6 @@ fn make_router(state: ReqState) -> Router {
             a.post().to(post_handler);
         });
     })
-}
-
-pub fn serve(logger: slog::Logger, addr: String) {
-    warn!(logger, "Listening for requests at http://{}", addr);
-    let r = make_router(ReqState::new(logger));
-
-    gotham::start(addr, r);
 }
 
 fn post_handler(mut state: State) -> Box<HandlerFuture> {
@@ -81,7 +81,7 @@ fn post_handler(mut state: State) -> Box<HandlerFuture> {
     Box::new(f)
 }
 
-pub fn get_handler(state: State) -> Box<HandlerFuture> {
+fn get_handler(state: State) -> Box<HandlerFuture> {
     let response = {
         let s = state.borrow::<ReqState>();
         let wc = &*s.wc.lock().unwrap();
