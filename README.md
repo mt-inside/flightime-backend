@@ -42,4 +42,5 @@ The returned JSON object will tell you the flight time elaspsed and remaining in
 Flightime also has a run-once CLI mode, where the start and end time can be provided as command-line arguments, in the same format as for the JSON endpoint.
 
 # TODO
-error handling
+* error handling
+* Take list of flights; just emits wallclock time normally but then speeds up / slows down during a flight (so can be permanently used for clock widgets)
